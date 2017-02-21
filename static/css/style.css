@@ -129,6 +129,7 @@ body {
 .content .block1 .search input{
 	height: 30px;
 	width: 190px;
+	box-sizing: border-box;
 	padding: 0 5px;
 	border: 2px solid #ccc;
     border-radius: 5px;
@@ -179,6 +180,7 @@ body {
 .block3 .signin-block input[type='text']{
 	display: block;
 	width: 100%;
+	box-sizing: border-box;
 	padding: 8px;
 	margin: 25px 0;
 	outline-color: white;
@@ -233,20 +235,26 @@ body {
 }
 
 
-
+.block4 .container .banner-container{
+	box-sizing: border-box;
+	max-width: 100%;
+	padding: 14px;
+}
 .block4 .container .winner {
 	vertical-align: top;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	width: 550px;
+	max-width: 100%;
+	box-sizing: border-box;
 	height: 200px;
 	background-color: #333333;
-	margin: 14px;
 	color: white;
 	text-transform: uppercase;
 	font-size: 35px;
 	line-height: 50px;
+	padding: 5px;
 }
 
 
@@ -256,10 +264,11 @@ body {
 	align-items: center;
 	justify-content: center;
 	width: 550px;
+	max-width: 100%;
+	box-sizing: border-box;
 	height: 200px;
 	display: inline-flex;
 	background-color: #00c8c8;
-	margin: 14px;
 }
 
 .block4 .container .social .social-text{

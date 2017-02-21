@@ -3,6 +3,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>BP simulator</title>
 	<link rel="stylesheet" href="{% static 'css/style.css' %}"/>
 	<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
@@ -38,8 +39,8 @@
 			</div>
 			<div style="flex-grow: 11;"></div>
 			<div class="search">
-				<img src="{% static 'image/searchicon.png' %}" style="position: relative; left: 202px; top: 7px" onclick="console.log('Searching')";>
-				<input type="text" name="search" placeholder="Search..">
+                <input type="text" name="search" placeholder="Search..">
+				<img src="{% static 'image/searchicon.png' %}" style="position: relative; right: 30px; top: 7px;" onclick="console.log('Searching')";>
 			</div>
 		</div>
 		<div class="block2">
@@ -112,20 +113,24 @@
 				</div>
 				<div class="column" style="max-width: 266px"><img style="margin-top: 14px" src="{% static 'image/itis.png' %}"> </div>
 				<div style="margin: 40px 0">
-					<div class="winner">
-						<div>
-							<div style="font-weight: 900;">Winner</div>
-							<div>The best product 2017</div>
-						</div>
-					</div>
-					<div class="social">
-						<div class="social-text">
-							<a href="">&#xe041</a>
-							<a href="">&#xe040</a>
-							<a href="">&#xe057</a>
-							<a href="">&#xe043</a>
-						</div>
-					</div>
+					<div class="banner-container">
+                        <div class="winner">
+                            <div>
+                                <div style="font-weight: 900;">Winner</div>
+                                <div>The best product 2017</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="banner-container">
+                        <div class="social">
+                            <div class="social-text">
+                                <a href="">&#xe041</a>
+                                <a href="">&#xe040</a>
+                                <a href="">&#xe057</a>
+                                <a href="">&#xe043</a>
+                            </div>
+                        </div>
+                    </div>
 				</div>
 			</div>
 		</div>

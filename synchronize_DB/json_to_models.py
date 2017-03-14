@@ -141,37 +141,53 @@ def get_components(project):
         create_component(id)
 
 
-# TODO
 def get_statuses():
-    statuses = jira.statuses
-    status = jira.status(1)
-    print status.name
-    print status.id
-    print status.description
-    print status.self
-    print status.iconUrl
-    print status.statusCategory
+    statuses = jira.statuses()
+    for status in statuses:
+        create_status(status.id)
 
 
-# TODO
 def create_status(id):
-    pass
+    status = IssueStatus.objects.filter(stat_id=id)
+    if len(status) == 0:
+        status_json = jira.status(id)
+        status = IssueStatus()
+        status.name = status_json.name
+        status.stat_id = id
+        status.description = status_json.description
+        status.icon_url = status_json.iconUrl
+        status.status_category = create_status_category(status.statusCategory)
+        status.save()
+    else:
+        status = status.get(0)
+    return status
+
+
+def create_status_category(status_category_json):
+    status_category = StatusCategory.objects.filter(stat_cat_id=status_category_json.id)
+    if len(status_category) == 0:
+        status_category = StatusCategory()
+        status_category.name = status_category_json.name
+        status_category.stat_cat_id = id
+        status_category.key = status_category_json.key
+        status_category.color_name = status_category_json.colorName
+        status_category.save()
+    else:
+        status_category = status_category.get(0)
+    return status_category
 
 
 # TODO
-def create_status_category(id):
-    pass
-
-
-# TODO
-def create_issues():
-    pass
+def get_issues(project_id):
+    issues = jira.search_issues('project=' + project_id)
+    for issue in issues:
+        create_issue(issue.key)
 
 
 # TODO
 def get_version_projects(project):
     project_versions = jira.project_versions(project)
-    for version in project_versions:
+    for version_json in project_versions:
         pass
         # TODO
         # print version.name
@@ -185,28 +201,35 @@ def get_version_projects(project):
 
 
 # TODO
-def get_issue(key):
-    issue = jira.issue('BIALPHASP-1027')
-    print issue.key
-    print issue.raw['fields']['created']
-    print issue.raw['fields']['project']
-    print issue.raw['fields']['issuetype']
-    print issue.raw['fields']['status']
-    print issue.raw['fields']['creator']
-    print issue.raw['fields']['reporter']
-    print issue.raw['fields']['description']
-    print issue.raw['fields']['progress']
-    print issue.raw['fields']['comment']
-    print issue.raw['fields']['priority']
-    print issue.raw['fields']['updated']
-    print issue.raw['fields']['duedate']
-    print issue.raw['fields']['resolutiondate']
-    print issue.raw['fields']['votes']
-    print issue.raw['fields']['watches']
-    print issue.raw['fields']['timeoriginalestimate']
-    print issue.raw['fields']['timeestimate']
-    print issue.raw['fields']['timespent']
-    print issue.raw['fields']['resolution']
-    print issue.raw['fields']['assignee']
-    print issue.raw['fields']['summary']
-    print issue.raw['fields']['environment']
+def create_issue(key):
+    # issue = jira.issue('BIALPHASP-1027')
+    issue = JiraIssue.objects.filter(key=key)
+    if len(issue) == 0:
+        issue = JiraIssue()
+        issue_json = jira.issue(key)
+        issue.key = issue_json.key
+        issue.project = create_project(issue_json.raw['fields']['project']['id'])
+        issue.assignee = issue_json.raw['fields']['assignee']
+        issue.issue_type = create_issue_type(issue_json.raw['fields']['issuetype']['id'])
+        issue.summary = issue_json.raw['fields']['summary']
+        issue.description = issue_json.raw['fields']['description']
+        issue.environment = issue_json.raw['fields']['environment']
+        issue.priority = create_priority(issue_json.raw['fields']['priority']['id'])
+        issue.resolution = issue_json.raw['fields']['resolution']
+        issue.issue_status = create_status(issue_json.raw['fields']['status']['id'])
+        issue.created = issue_json.raw['fields']['created']
+        issue.updated = issue_json.raw['fields']['updated']
+        issue.due_time = issue_json.raw['fields']['duedate']
+        issue.votes = issue_json.raw['fields']['votes']
+        issue.watches = issue_json.raw['fields']['watches']
+        issue.time_original_estimate = issue_json.raw['fields']['timeoriginalestimate']
+        issue.time_estimate = issue_json.raw['fields']['timeestimate']
+        issue.time_spent = issue_json.raw['fields']['timespent']
+        # issue_json.raw['fields']['creator']
+        # print issue_json.raw['fields']['reporter']
+        # issue_json.raw['fields']['progress']
+        # print issue_json.raw['fields']['comment']
+        issue.save()
+    else:
+        issue = issue.get(0)
+    return issue

@@ -5,17 +5,19 @@ from django.db import models
 
 
 class StatusCategory(models.Model):
+    stat_cat_id = models.IntegerField(default=0)
     name = models.CharField(max_length=255)
     key = models.CharField(max_length=60)
     color_name = models.CharField(max_length=60)
 
 
 class IssueStatus(models.Model):
-    sequence = models.IntegerField(default=0)
+    stat_id = models.IntegerField(default=0)
     name = models.CharField(max_length=60)
     description = models.TextField()
     icon_url = models.CharField(max_length=255)
     status_category = models.ForeignKey(StatusCategory)
+    # sequence = models.IntegerField(default=0)
 
 
 class Priority(models.Model):
@@ -105,12 +107,12 @@ class JiraIssue(models.Model):
     created = models.DateTimeField()
     updated = models.DateTimeField()
     due_time = models.DateTimeField()
-    resolution_date = models.DateTimeField()
     votes = models.IntegerField(default=0)
     watches = models.IntegerField(default=0)
     time_original_estimate = models.IntegerField(default=0)
     time_estimate = models.IntegerField(default=0)
     time_spent = models.IntegerField(default=0)
+    # resolution_date = models.DateTimeField()
     # workflow = models.ForeignKey(Workflow)
     # security = models.IntegerField(default=0)
     # issue_sum = models.IntegerField(default=0)

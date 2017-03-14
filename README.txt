@@ -1,0 +1,1 @@
+For synchronize you should enter server name, your name and password in json_to_models.py file in function init()

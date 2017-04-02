@@ -92,6 +92,7 @@ class JiraUser(jira_db.Entity):
     active = Optional(bool)
     uri = Optional(str)
     leadSet = Set('Project')
+    assigneedIssues = Set('JiraIssue')
 
 
 class Project(jira_db.Entity):
@@ -108,7 +109,7 @@ class Project(jira_db.Entity):
     name = Optional(str)
     url = Optional(str)
     lead = Optional(JiraUser)
-    description = Optional(str)
+    description = Optional(unicode)
     key = Optional(str)
     componentSet = Set('Component')
     projectVersionSet = Set('ProjectVersion')
@@ -182,7 +183,7 @@ class JiraIssue(jira_db.Entity):
     # issue_sum = models.IntegerField(default=0)
     key = Required(str)
     project = Optional(Project)
-    assignee = Optional(str)
+    assignee = Optional(JiraUser)
     issue_type = Optional(IssueType)
     summary = Optional(str)
     description = Optional(str)

@@ -2,7 +2,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-from jira import JIRA
+from jira import JIRA, JIRAError
 from models import *
 from pony.orm import *
 from datetime import datetime
@@ -21,16 +21,6 @@ def init():
 jira = init()
 
 
-# projects = jira.projects()
-# for project in projects:
-#     print project
-#
-# issues = jira.search_issues('project=BIALPHABI')
-# for issue in issues:
-#     print issue
-#     fields = issue
-#     summary = issue.fields.summary
-#     print summary
 
 
 
@@ -58,9 +48,10 @@ def create_project(id):
     if (project == None):
         project_json = jira.project(id)
         project = Project(project_id=id)
-        project.description = project_json.description
+        if hasattr(project_json, 'url'):
+            project.url = project_json.url
+        project.description  = project_json.description
         project.key = project_json.key
-        project.url = project_json.url
         project.name = project_json.name
         project.lead = create_user(project_json.lead.key)
     return project
@@ -213,8 +204,8 @@ def create_issue(key):
         issue_json = jira.issue(key)
         issue = JiraIssue(key=issue_json.key)
         issue.project = create_project(issue_json.fields.project.id)
-        if issue_json.fields.assignee:
-            issue.assignee = issue_json.fields.assignee
+        if issue_json.fields.assignee and len(issue_json.fields.assignee.key) > 0:
+            issue.assignee = create_user(issue_json.fields.assignee.key)
         if issue_json.fields.issuetype:
             issue.issue_type = create_issue_type(issue_json.fields.issuetype.id)
         if issue_json.fields.summary:
@@ -226,7 +217,7 @@ def create_issue(key):
         if issue_json.fields.priority:
             issue.priority = create_priority(issue_json.fields.priority.id)
         if issue_json.fields.resolution:
-            issue.resolution = issue_json.fields.resolution
+            issue.resolution = issue_json.fields.resolution.name
         if issue_json.fields.status:
             issue.issue_status = create_status(issue_json.fields.status.id)
         issue.created = parse_datetime(issue_json.fields.created)
@@ -245,11 +236,36 @@ def create_issue(key):
     return issue
 
 
-issue = jira.issue('BIALPHABI-3024')
+# issue = jira.issue('BIALPHABI-3024')
+# issue = jira.issue('BIALPHASP-1061')
+# issue = jira.issue('BIMONEU-1174')
 # print issue.raw["fields"]["watches"]
 
-jira_issue = create_issue(issue.key)
-print jira_issue
+# print issue.raw
+
+# print issue.fields.assignee
+
+# print issue.raw["fields"]["project"]
+# print issue.raw["fields"]
+
+# print issue.raw["fields"]["assignee"]
+# create_issue(issue.key)
+#
+projects = jira.projects()
+for project in projects:
+    print project
+    try:
+        issues = jira.search_issues('project=%s' % project)
+
+        for issue in issues:
+            print issue
+            ji = create_issue(issue.key)
+            print ji
+
+    except JIRAError:
+        print "Can't connect"
+
+
 
 # with db_session:
 #     jira_issue = JiraIssue.get(key="BIALPHABI-3024")

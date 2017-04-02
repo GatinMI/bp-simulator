@@ -1,47 +1,67 @@
+# coding=utf-8
+from __future__ import unicode_literals
+
 from jira import JIRA
 from models import *
+from pony.orm import *
 
 
 def init():
-    jira_server = raw_input("Server: ")
-    jira_user = raw_input("User: ")
-    jira_password = raw_input("Password: ")
+    jira_server = "http://jira-lab.bars.group:8080"
+    # jira_user = raw_input("User: ") #ext_i.nasibullin
+    jira_user = "ext_i.nasibullin"  # ext_i.nasibullin
+    # jira_password = raw_input("Password: ") #jstyJZAwFAo9
+    jira_password = "jstyJZAwFAo9"  # jstyJZAwFAo9
     jira_server = {'server': jira_server}
     jira = JIRA(options=jira_server, basic_auth=(jira_user, jira_password))
     return jira
 
+
 jira = init()
 
+
+# projects = jira.projects()
+# for project in projects:
+#     print project
+#
+# issues = jira.search_issues('project=BIALPHABI')
+# for issue in issues:
+#     print issue
+#     fields = issue
+#     summary = issue.fields.summary
+#     print summary
+
+
+
+# jira.project_components('project=NIALPHABI')
+
+# json = jira._get_json()
+# print json
+
+@db_session
 def create_user(key):
-    user = JiraUser.objects.filter(key=key)
-    if len(user) == 0:
+    user = JiraUser.get(key=key)
+    if (user == None):
         user_json = jira.user(key)
-        user = JiraUser()
-        user.key = key
+        user = JiraUser(key=key)
         user.name = user_json.name
         user.displayName = user_json.displayName
         user.emailAddress = user_json.emailAddress
         user.active = bool(user_json.active)
-        user.save()
-    else:
-        user = user.get(0)
     return user
 
 
+@db_session
 def create_project(id):
-    project = Project.objects.filter(project_id=id)
-    if len(project) == 0:
+    project = Project.get(project_id=id)
+    if (project == None):
         project_json = jira.project(id)
-        project = Project()
+        project = Project(project_id=id)
         project.description = project_json.description
-        project.project_id = id
         project.key = project_json.key
         project.url = project_json.url
         project.name = project_json.name
         project.lead = create_user(project_json.lead.key)
-        project.save()
-    else:
-        project = project.get(0)
     return project
 
 
@@ -51,17 +71,15 @@ def get_projects():
         create_project(int(project.id))
 
 
+@db_session
 def create_link_type(id):
-    link_type = IssueLinkType.objects.filter(link_id=id)
-    if len(link_type) == 0:
+    link_type = IssueLinkType.get(link_id=id)
+    if (link_type == None):
         link_type_json = jira.issue_link_type(id)
-        link_type = IssueLinkType()
+        link_type = IssueLinkType(link_id=id)
         link_type.inward = link_type_json.inward
         link_type.outward = link_type_json.outward
         link_type.name = link_type_json.name
-        link_type.link_id = id
-    else:
-        link_type = link_type.get(0)
     return link_type
 
 
@@ -71,17 +89,14 @@ def get_link_types():
         create_link_type(link_type.id)
 
 
+@db_session
 def create_issue_type(id):
-    issue_type = IssueType.objects.filter(type_id=id)
-    if len(issue_type) == 0:
+    issue_type = IssueType.get(type_id=id)
+    if (issue_type == None):
         issue_type_json = jira.issue_type(id)
-        issue_type = IssueType()
+        issue_type = IssueType(type_id=id)
         issue_type.name = issue_type_json.name
         issue_type.description = issue_type_json.description
-        issue_type.type_id = id
-        issue_type.save()
-    else:
-        issue_type = issue_type.get(0)
     return issue_type
 
 
@@ -92,19 +107,16 @@ def get_issue_types():
         create_issue_type(issue_type.id)
 
 
+@db_session
 def create_priority(id):
-    priority = Priority.objects.filter(priority_id=id)
-    if len(priority) == 0:
-        priority_json = jira.issue_type(id)
-        priority = Priority()
+    priority = Priority.get(priority_id=id)
+    if (priority == None):
+        priority_json = jira.priority(id)
+        priority = Priority(priority_id=priority_json.id)
         priority.name = priority_json.name
         priority.description = priority_json.description
         priority.statusColor = priority_json.statusColor
         priority.iconUrl = priority_json.iconUrl
-        priority.priority_id = id
-        priority.save()
-    else:
-        priority = priority.get(0)
     return priority
 
 
@@ -114,29 +126,26 @@ def get_priorities():
         create_priority(priority.id)
 
 
+@db_session
 def create_component(id):
-    component = Component.objects.filter(component_id=id)
-    if len(component) == 0:
+    component = Component.get(component_id=id)
+    if component == None:
         component_json = jira.component(id)
-        component = Component()
+        component = Component(component_id=id)
         component.name = component_json.name
-        component.component_id = id
         if 'lead' in component_json.__dict__:
             component.lead = component_json.lead
         else:
             component.lead = None
         component.assigneeType = component_json.assigneeType
         component.project = create_project(component_json.project.id)
-        component.save()
-    else:
-        component = component.get(0)
     return component
 
 
 def get_components(project):
     components = jira.project_components(project)
     for component in components:
-        create_component(id)
+        create_component(component.id)
 
 
 def get_statuses():
@@ -145,33 +154,29 @@ def get_statuses():
         create_status(status.id)
 
 
+@db_session
 def create_status(id):
-    status = IssueStatus.objects.filter(stat_id=id)
-    if len(status) == 0:
+    status = IssueStatus.get(stat_id=id)
+    if status == None:
         status_json = jira.status(id)
-        status = IssueStatus()
+        status = IssueStatus(stat_id=id)
         status.name = status_json.name
-        status.stat_id = id
         status.description = status_json.description
         status.icon_url = status_json.iconUrl
-        status.status_category = create_status_category(status.statusCategory)
-        status.save()
-    else:
-        status = status.get(0)
+        # status.status_category = create_status_category(status.statusCategory) ???
     return status
 
 
+@db_session
 def create_status_category(status_category_json):
-    status_category = StatusCategory.objects.filter(stat_cat_id=status_category_json.id)
-    if len(status_category) == 0:
+    status_category = StatusCategory.get(stat_cat_id=status_category_json.id)
+    if status_category == None:
         status_category = StatusCategory()
         status_category.name = status_category_json.name
         status_category.stat_cat_id = id
         status_category.key = status_category_json.key
         status_category.color_name = status_category_json.colorName
         status_category.save()
-    else:
-        status_category = status_category.get(0)
     return status_category
 
 
@@ -199,13 +204,13 @@ def get_version_projects(project):
 
 
 # TODO
+@db_session
 def create_issue(key):
     # issue = jira.issue('BIALPHASP-1027')
-    issue = JiraIssue.objects.filter(key=key)
-    if len(issue) == 0:
-        issue = JiraIssue()
+    issue = JiraIssue.get(key=key)
+    if (issue == None):
         issue_json = jira.issue(key)
-        issue.key = issue_json.key
+        issue = JiraIssue(key=issue_json.key)
         issue.project = create_project(issue_json.raw['fields']['project']['id'])
         issue.assignee = issue_json.raw['fields']['assignee']
         issue.issue_type = create_issue_type(issue_json.raw['fields']['issuetype']['id'])
@@ -227,7 +232,14 @@ def create_issue(key):
         # print issue_json.raw['fields']['reporter']
         # issue_json.raw['fields']['progress']
         # print issue_json.raw['fields']['comment']
-        issue.save()
-    else:
-        issue = issue.get(0)
     return issue
+
+
+issue = jira.issue('BIALPHABI-3024')
+
+# print issue.fields.created
+# create_issue(issue.key)
+print issue.fields.project.id
+project = jira.project(u'10616')
+# project = jira.project("10616".encode('utf-8'))
+print project

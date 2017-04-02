@@ -1,17 +1,18 @@
-# coding=utf-8
-from __future__ import unicode_literals
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from jira import JIRA
 from models import *
 from pony.orm import *
+from datetime import datetime
+from django.utils.dateparse import parse_datetime
 
 
 def init():
     jira_server = "http://jira-lab.bars.group:8080"
-    # jira_user = raw_input("User: ") #ext_i.nasibullin
-    jira_user = "ext_i.nasibullin"  # ext_i.nasibullin
-    # jira_password = raw_input("Password: ") #jstyJZAwFAo9
-    jira_password = "jstyJZAwFAo9"  # jstyJZAwFAo9
+    jira_user = raw_input("User: ")
+    jira_password = raw_input("Password: ")
     jira_server = {'server': jira_server}
     jira = JIRA(options=jira_server, basic_auth=(jira_user, jira_password))
     return jira
@@ -211,23 +212,32 @@ def create_issue(key):
     if (issue == None):
         issue_json = jira.issue(key)
         issue = JiraIssue(key=issue_json.key)
-        issue.project = create_project(issue_json.raw['fields']['project']['id'])
-        issue.assignee = issue_json.raw['fields']['assignee']
-        issue.issue_type = create_issue_type(issue_json.raw['fields']['issuetype']['id'])
-        issue.summary = issue_json.raw['fields']['summary']
-        issue.description = issue_json.raw['fields']['description']
-        issue.environment = issue_json.raw['fields']['environment']
-        issue.priority = create_priority(issue_json.raw['fields']['priority']['id'])
-        issue.resolution = issue_json.raw['fields']['resolution']
-        issue.issue_status = create_status(issue_json.raw['fields']['status']['id'])
-        issue.created = issue_json.raw['fields']['created']
-        issue.updated = issue_json.raw['fields']['updated']
-        issue.due_time = issue_json.raw['fields']['duedate']
-        issue.votes = issue_json.raw['fields']['votes']
-        issue.watches = issue_json.raw['fields']['watches']
-        issue.time_original_estimate = issue_json.raw['fields']['timeoriginalestimate']
-        issue.time_estimate = issue_json.raw['fields']['timeestimate']
-        issue.time_spent = issue_json.raw['fields']['timespent']
+        issue.project = create_project(issue_json.fields.project.id)
+        if issue_json.fields.assignee:
+            issue.assignee = issue_json.fields.assignee
+        if issue_json.fields.issuetype:
+            issue.issue_type = create_issue_type(issue_json.fields.issuetype.id)
+        if issue_json.fields.summary:
+            issue.summary = issue_json.fields.summary
+        if issue_json.fields.description:
+            issue.description = issue_json.fields.description
+        if issue_json.fields.environment:
+            issue.environment = issue_json.fields.environment
+        if issue_json.fields.priority:
+            issue.priority = create_priority(issue_json.fields.priority.id)
+        if issue_json.fields.resolution:
+            issue.resolution = issue_json.fields.resolution
+        if issue_json.fields.status:
+            issue.issue_status = create_status(issue_json.fields.status.id)
+        issue.created = parse_datetime(issue_json.fields.created)
+        issue.updated = parse_datetime(issue_json.fields.updated)
+        if issue_json.fields.duedate:
+            issue.due_time = parse_datetime(issue_json.fields.duedate)
+        issue.votes = issue_json.fields.votes.votes
+        issue.watches = issue_json.fields.watches.watchCount
+        issue.time_original_estimate = issue_json.fields.timeoriginalestimate
+        issue.time_estimate = issue_json.fields.timeestimate
+        issue.time_spent = issue_json.fields.timespent
         # issue_json.raw['fields']['creator']
         # print issue_json.raw['fields']['reporter']
         # issue_json.raw['fields']['progress']
@@ -236,10 +246,12 @@ def create_issue(key):
 
 
 issue = jira.issue('BIALPHABI-3024')
+# print issue.raw["fields"]["watches"]
 
-# print issue.fields.created
-# create_issue(issue.key)
-print issue.fields.project.id
-project = jira.project(u'10616')
-# project = jira.project("10616".encode('utf-8'))
-print project
+jira_issue = create_issue(issue.key)
+print jira_issue
+
+# with db_session:
+#     jira_issue = JiraIssue.get(key="BIALPHABI-3024")
+#     print jira_issue.project.name
+

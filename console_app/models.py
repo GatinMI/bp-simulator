@@ -14,10 +14,10 @@ class StatusCategory(jira_db.Entity):
     # key = models.CharField(max_length=60)
     # color_name = models.CharField(max_length=60)
     stat_cat_id = Required(int)
-    name = Required(str)
-    key = Required(str)
-    color_name = Required(str)
-
+    name = Optional(str)
+    key = Optional(str)
+    color_name = Optional(str)
+    issueStatusSet = Set('IssueStatus')
 
 class IssueStatus(jira_db.Entity):
     # stat_id = models.IntegerField(default=0)
@@ -27,11 +27,11 @@ class IssueStatus(jira_db.Entity):
     # status_category = models.ForeignKey(StatusCategory)
     # sequence = models.IntegerField(default=0)
     stat_id = Required(int)
-    name = Required(str)
+    name = Optional(str)
     description = Optional(str)
     icon_url = Optional(str)
-    status_category = Required(str)
-    sequence = Required(int)
+    status_category = Optional(StatusCategory)
+    sequence = Optional(int)
     jiraIssueSet = Set('JiraIssue')
 
 
@@ -42,12 +42,12 @@ class Priority(jira_db.Entity):
     # icon_url = models.CharField(max_length=255)
     # status_color = models.CharField(max_length=60)
     # priority_id = models.IntegerField(default=0)
-    sequence = Required(int)
-    nsme = Required(str)
+    priority_id = Required(int)
+    sequence = Optional(int)
+    name = Optional(str)
     description = Optional(str)
     icon_url = Optional(str)
     status_color = Optional(str)
-    priority_id = Required(int)
     jiraIssueSet = Set('JiraIssue')
 
 class Avatar(jira_db.Entity):
@@ -58,9 +58,9 @@ class IssueType(jira_db.Entity):
     # name = models.CharField(max_length=255)
     # description = models.CharField(max_length=255)
     # type_id = models.IntegerField(default=0)
-    name = Required(str)
-    description = Required(str)
     type_id = Required(int)
+    name = Optional(str)
+    description = Optional(str)
     jiraIssueSet = Set('JiraIssue')
 
 class IssueLinkType(jira_db.Entity):
@@ -69,11 +69,11 @@ class IssueLinkType(jira_db.Entity):
     # outward = models.CharField(max_length=255)
     # link_id = models.IntegerField(default=0)
     # style = models.CharField(max_length=60)
-    link_name = Required(str)
-    inward = Required(str)
-    outward = Required(str)
     link_id = Required(int)
-    style = Required(str)
+    link_name = Optional(str)
+    inward = Optional(str)
+    outward = Optional(str)
+    style = Optional(str)
 
 
 # доделать
@@ -85,12 +85,12 @@ class JiraUser(jira_db.Entity):
     # active = models.BinaryField()
     # uri = models.CharField(max_length=255)
     # avatarUrls = None
-    name = Required(str)
     key = Required(str)
-    emailAddress = Required(str)
-    displayName = Required(str)
-    active = Required(bool)
-    uri = Required(str)
+    name = Optional(str)
+    emailAddress = Optional(str)
+    displayName = Optional(str)
+    active = Optional(bool)
+    uri = Optional(str)
     leadSet = Set('Project')
 
 
@@ -104,12 +104,12 @@ class Project(jira_db.Entity):
     # counter = models.IntegerField(default=0)
     # assignee_type = models.IntegerField(default=0)
     # avatar = models.ForeignKey(Avatar)
-    name = Required(str)
-    url = Required(str)
-    lead = Optional(JiraUser)
-    description = Required(str)
-    key = Required(str)
     project_id = Required(int)
+    name = Optional(str)
+    url = Optional(str)
+    lead = Optional(JiraUser)
+    description = Optional(str)
+    key = Optional(str)
     componentSet = Set('Component')
     projectVersionSet = Set('ProjectVersion')
     jiraIsseuSet = Set('JiraIssue')

@@ -1,0 +1,20 @@
+{% extends 'header_footer.html' %}
+{% load static %}
+{% block content %}
+    <div class="block3">
+        <div class="signin-block">
+            <p>SIGN IN</p>
+            <form method="post" >
+                {% csrf_token %}
+                <input type="text" name="email" placeholder="Your Email..">
+
+                <input type="password" name="password" placeholder="Your Password..">
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <input type="submit" class="blue-button" value="SIGN IN">
+                    <a class="blue-text" style="font-size: 14px"> Forgot Your Password ➙ </a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

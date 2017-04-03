@@ -21,5 +21,6 @@ from bpsimulatordev import settings
 
 urlpatterns = [
     url(r'^$', index, name='index'),
+    url(r'^signin/', signin, name='signin'),
     url(r'^admin/', admin.site.urls),
 ]

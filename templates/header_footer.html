@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>BP simulator</title>
+	<link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+	<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+	<script src="{% static 'js/jquery-3.1.1.min.js' %}" type="text/javascript"></script>
+    <link rel="icon" href="{% static 'image/icon.png' %}"/>
+</head>
+<body>
+	<div class=nav-bar>
+		<div style="flex-grow: 9; text-align: center;">
+			<div class=dropdown style="flex-grow: 9; text-align: center;">
+				<button onclick="dropLanguages()" class="dropbtn">English <svg class="arrows"><path d="M0 0 L4 4 L8 0"></path></svg>
+				</button>
+				<div id=languages-list>
+					<a href="#">English</a>
+					<a href="#">Русский</a>
+					<a href="#">Татарча</a>
+				</div>
+			</div>
+		</div>
+		<div style="flex-grow: 3; text-align: center;">
+
+		</div>
+		<div style="flex-grow: 3; text-align: center;">
+			<a href="/signin" class="signin blue-text">Sign In</a>
+		</div>
+		<div style="flex-grow: 5">
+			<a href="/" class="simulation blue-button">SIMULATION</a>
+		</div>
+	</div>
+
+
+    {% block content %}
+    {% endblock %}
+
+    <div class="footer">
+		<div style="flex-grow: 1; text-align: center;">
+			&#xa9; 2017 BARSlab&#x2122;
+		</div>
+		<div style="flex-grow: 1; text-align: center;">
+			Design by Amir Galimullin
+		</div>
+	</div>
+	<script src="{% static 'js/javascript.js' %}" type="text/javascript"></script>
+</body>
+</html>

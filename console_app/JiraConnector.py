@@ -223,50 +223,8 @@ class JiraConnector:
         return jira_issue
 
 
-
-
-    @db_session
-    def create_issue(self,key):
-        issue = JiraIssue.get(key=key)
-        if (issue == None):
-            issue_json = self.jira.issue(key)
-            issue = JiraIssue(key=issue_json.key)
-            issue.project = self.get_project(issue_json.fields.project.id)
-            if issue_json.fields.assignee and len(issue_json.fields.assignee.key) > 0:
-                issue.assignee = self.get_user(issue_json.fields.assignee.key)
-            if issue_json.fields.issuetype:
-                issue.issue_type = self.get_issue_type(issue_json.fields.issuetype.id)
-            if issue_json.fields.summary:
-                issue.summary = issue_json.fields.summary
-            if issue_json.fields.description:
-                issue.description = issue_json.fields.description
-            if issue_json.fields.environment:
-                issue.environment = issue_json.fields.environment
-            if issue_json.fields.priority:
-                issue.priority = self.get_priority(issue_json.fields.priority.id)
-            if issue_json.fields.resolution:
-                issue.resolution = issue_json.fields.resolution.name
-            if issue_json.fields.status:
-                issue.issue_status = self.get_status(issue_json.fields.status.id)
-            issue.created = parse_datetime(issue_json.fields.created)
-            issue.updated = parse_datetime(issue_json.fields.updated)
-            if issue_json.fields.duedate:
-                issue.due_time = parse_datetime(issue_json.fields.duedate)
-            issue.votes = issue_json.fields.votes.votes
-            issue.watches = issue_json.fields.watches.watchCount
-            issue.time_original_estimate = issue_json.fields.timeoriginalestimate
-            issue.time_estimate = issue_json.fields.timeestimate
-            issue.time_spent = issue_json.fields.timespent
-            # issue_json.raw['fields']['creator']
-            # print issue_json.raw['fields']['reporter']
-            # issue_json.raw['fields']['progress']
-            # print issue_json.raw['fields']['comment']
-        return issue
-
-
-
 if __name__ == "__main__":
-    accessor = JiraConnector('http://jira-lab.bars.group:8080', 'ext_i.nasibullin', 'jstyJZAwFAo9')
+    accessor = JiraConnector()
 
     projects = accessor.jira.projects()
 

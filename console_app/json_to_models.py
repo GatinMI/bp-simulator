@@ -17,17 +17,15 @@ def init():
     jira = JIRA(options=jira_server, basic_auth=(jira_user, jira_password))
     return jira
 
+def init_credentials(user, password):
+    jira_server = "http://jira-lab.bars.group:8080"
+    jira_user = user
+    jira_password = password
+    jira_server = {'server': jira_server}
+    jira = JIRA(options=jira_server, basic_auth=(jira_user, jira_password))
+    return jira
 
-jira = init()
-
-
-
-
-
-# jira.project_components('project=NIALPHABI')
-
-# json = jira._get_json()
-# print json
+jira = init_credentials('ext_i.nasibullin', 'jstyJZAwFAo9')
 
 @db_session
 def create_user(key):
@@ -198,7 +196,6 @@ def get_version_projects(project):
 # TODO
 @db_session
 def create_issue(key):
-    # issue = jira.issue('BIALPHASP-1027')
     issue = JiraIssue.get(key=key)
     if (issue == None):
         issue_json = jira.issue(key)
@@ -238,10 +235,10 @@ def create_issue(key):
 
 # issue = jira.issue('BIALPHABI-3024')
 # issue = jira.issue('BIALPHASP-1061')
-# issue = jira.issue('BIMONEU-1174')
+issue = jira.issue('BIMONEU-1174')
 # print issue.raw["fields"]["watches"]
 
-# print issue.raw
+print issue.raw["fields"]
 
 # print issue.fields.assignee
 
@@ -251,23 +248,18 @@ def create_issue(key):
 # print issue.raw["fields"]["assignee"]
 # create_issue(issue.key)
 #
-projects = jira.projects()
-for project in projects:
-    print project
-    try:
-        issues = jira.search_issues('project=%s' % project)
+# projects = jira.projects()
+# for project in projects:
+#     print project
+#     try:
+#         issues = jira.search_issues('project=%s' % project)
+#
+#         for issue in issues:
+#             print issue
+#             ji = create_issue(issue.key)
+#             print ji
+#
+#     except JIRAError:
+#         print "Can't connect"
 
-        for issue in issues:
-            print issue
-            ji = create_issue(issue.key)
-            print ji
-
-    except JIRAError:
-        print "Can't connect"
-
-
-
-# with db_session:
-#     jira_issue = JiraIssue.get(key="BIALPHABI-3024")
-#     print jira_issue.project.name
 

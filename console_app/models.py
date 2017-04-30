@@ -7,12 +7,7 @@ from datetime import datetime, time
 
 jira_db = Database()
 
-
 class StatusCategory(jira_db.Entity):
-    # stat_cat_id = models.IntegerField(default=0)
-    # name = models.CharField(max_length=255)
-    # key = models.CharField(max_length=60)
-    # color_name = models.CharField(max_length=60)
     stat_cat_id = Required(int)
     name = Optional(str)
     key = Optional(str)
@@ -20,12 +15,6 @@ class StatusCategory(jira_db.Entity):
     issueStatusSet = Set('IssueStatus')
 
 class IssueStatus(jira_db.Entity):
-    # stat_id = models.IntegerField(default=0)
-    # name = models.CharField(max_length=60)
-    # description = models.TextField()
-    # icon_url = models.CharField(max_length=255)
-    # status_category = models.ForeignKey(StatusCategory)
-    # sequence = models.IntegerField(default=0)
     stat_id = Required(int)
     name = Optional(str)
     description = Optional(str)
@@ -36,12 +25,6 @@ class IssueStatus(jira_db.Entity):
 
 
 class Priority(jira_db.Entity):
-    # sequence = models.IntegerField(default=0)
-    # name = models.CharField(max_length=60)
-    # description = models.TextField()
-    # icon_url = models.CharField(max_length=255)
-    # status_color = models.CharField(max_length=60)
-    # priority_id = models.IntegerField(default=0)
     priority_id = Required(int)
     sequence = Optional(int)
     name = Optional(str)
@@ -55,20 +38,13 @@ class Avatar(jira_db.Entity):
 
 
 class IssueType(jira_db.Entity):
-    # name = models.CharField(max_length=255)
-    # description = models.CharField(max_length=255)
-    # type_id = models.IntegerField(default=0)
     type_id = Required(int)
     name = Optional(str)
     description = Optional(str)
     jiraIssueSet = Set('JiraIssue')
 
 class IssueLinkType(jira_db.Entity):
-    # link_name = models.CharField(max_length=255)
-    # inward = models.CharField(max_length=255)
-    # outward = models.CharField(max_length=255)
-    # link_id = models.IntegerField(default=0)
-    # style = models.CharField(max_length=60)
+
     link_id = Required(int)
     link_name = Optional(str)
     inward = Optional(str)
@@ -78,13 +54,6 @@ class IssueLinkType(jira_db.Entity):
 
 # доделать
 class JiraUser(jira_db.Entity):
-    # name = models.CharField(max_length=255)
-    # key = models.CharField(max_length=60)
-    # emailAddress = models.CharField(max_length=255)
-    # displayName = models.CharField(max_length=255)
-    # active = models.BinaryField()
-    # uri = models.CharField(max_length=255)
-    # avatarUrls = None
     key = Required(str)
     name = Optional(str)
     emailAddress = Optional(str)
@@ -96,15 +65,6 @@ class JiraUser(jira_db.Entity):
 
 
 class Project(jira_db.Entity):
-    # name = models.CharField(max_length=255)
-    # url = models.CharField(max_length=255)
-    # lead = models.ForeignKey(JiraUser)
-    # description = models.TextField(blank=True)
-    # key = models.CharField(max_length=255)
-    # project_id = models.IntegerField(default=0)
-    # counter = models.IntegerField(default=0)
-    # assignee_type = models.IntegerField(default=0)
-    # avatar = models.ForeignKey(Avatar)
     project_id = Required(int)
     name = Optional(str)
     url = Optional(str)
@@ -119,13 +79,6 @@ class Project(jira_db.Entity):
 
 
 class Component(jira_db.Entity):
-    # component_id = models.IntegerField(default=0)
-    # name = models.CharField(max_length=255)
-    # lead = models.CharField(max_length=255)
-    # assignee_type = models.IntegerField(default=0)
-    # project = models.ForeignKey(Project)
-    # description = models.TextField(blank=True)
-    # url = models.CharField(max_length=255)
     component_id = Required(int)
     name = Required(str)
     lead = Required(str)
@@ -136,16 +89,6 @@ class Component(jira_db.Entity):
 
 
 class ProjectVersion(jira_db.Entity):
-    # proj_id = models.IntegerField(default=0)
-    # name = models.CharField(max_length=255)
-    # project = models.ForeignKey(Project)
-    # realised = models.CharField(max_length=10)
-    # archived = models.CharField(max_length=10)
-    # realise_date = models.DateTimeField()
-    # start_date = models.DateTimeField()
-    # url = models.CharField(max_length=255)
-    # sequence = models.IntegerField(default=0)
-    # description = models.TextField(blank=True)
     proj_id = Required(int)
     name = Required(str)
     project = Required(Project)
@@ -159,28 +102,6 @@ class ProjectVersion(jira_db.Entity):
 
 
 class JiraIssue(jira_db.Entity):
-    # key = models.CharField(max_length=255)
-    # project = models.ForeignKey(Project)
-    # assignee = models.CharField(max_length=255)
-    # issue_type = models.ForeignKey(IssueType)
-    # summary = models.CharField(max_length=255)
-    # description = models.TextField(blank=True)
-    # environment = models.TextField()
-    # priority = models.ForeignKey(Priority)
-    # resolution = models.CharField(max_length=255)
-    # issue_status = models.ForeignKey(IssueStatus)
-    # created = models.DateTimeField()
-    # updated = models.DateTimeField()
-    # due_time = models.DateTimeField()
-    # votes = models.IntegerField(default=0)
-    # watches = models.IntegerField(default=0)
-    # time_original_estimate = models.IntegerField(default=0)
-    # time_estimate = models.IntegerField(default=0)
-    # time_spent = models.IntegerField(default=0)
-    # resolution_date = models.DateTimeField()
-    # workflow = models.ForeignKey(Workflow)
-    # security = models.IntegerField(default=0)
-    # issue_sum = models.IntegerField(default=0)
     key = Required(str)
     project = Optional(Project)
     assignee = Optional(JiraUser)
@@ -221,5 +142,5 @@ class JiraIssue(jira_db.Entity):
 #     time_worked = models.IntegerField(default=0)
 
 
-jira_db.bind('sqlite', 'jira_db.sqlite', create_db=True)
+jira_db.bind('sqlite', 'jira_db.sqlite3', create_db=True)
 jira_db.generate_mapping(create_tables=True)

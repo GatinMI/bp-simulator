@@ -171,10 +171,10 @@ class JiraConnector:
 
     @db_session
     def create_or_update_issue(self, id):
-        jira_issue = JiraIssue.get(issue_id=id)
+        jira_issue = JiraIssue.get(key=id)
         issue = self.jira.issue(id)
         if (jira_issue == None):
-            jira_issue = JiraIssue(issue_id=id, key=issue.key)
+            jira_issue = JiraIssue(key=id)
 
         utc = pytz.UTC
         issue_updated = parse_datetime(issue.fields.updated)
@@ -223,15 +223,22 @@ class JiraConnector:
         Project.select(lambda p: p.project_id in drop_projects).delete(bulk=True)
         for id in drop_projects:
             self.delete_issues(int(id))
-
     @db_session
     def sync_issues(self, project_id):
-        issues = self.jira.search_issues('project=' + project_id)
+        issues = self.jira.search_issues('project=' + str(project_id))
         db_issues = select(p.key for p in JiraIssue)[:]
         issues_id = []
         for issue in issues:
-            issues_id.append(issue.key)
-            self.create_or_update_issue(issue.key)
+            try:
+                issues_id.append(issue.key)
+                self.create_or_update_issue(issue.key)
+            except JIRAError as error:
+                print "Sorry, but you can't access to issue # "
+                print issue
+                if error.status_code == 404:
+                    print ". Because  you don't have permission"
+                else:
+                    print ". Because project was deleted"
         drop_issues = set(db_issues).difference(set(issues_id))
         Project.select(lambda p: p.project_id in drop_issues).delete(bulk=True)
 
@@ -259,14 +266,14 @@ class JiraConnector:
             project.lead = self.get_user(project_json.lead.key)
 
 if __name__ == "__main__":
-    accessor = JiraConnector()
+    accessor = JiraConnector("http://jira-lab.bars.group:8080", '***', '***')
 
-    projects = accessor.jira.projects()
+    projects = accessor.sync_projects()
 
-    project = accessor.jira.project(projects[0])
-
-    issue = accessor.jira.search_issues('project=%s' % project)[1]
-    jira_issue = accessor.create_or_update_issue(issue.id)
+    # project = accessor.jira.project(projects[0])
+    #
+    # issue = accessor.jira.search_issues('project=%s' % project)[1]
+    # jira_issue = accessor.create_or_update_issue(issue.id)
 
     # import json
     # file = open('project.json', 'w')

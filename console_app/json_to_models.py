@@ -248,18 +248,18 @@ print issue.raw["fields"]
 # print issue.raw["fields"]["assignee"]
 # create_issue(issue.key)
 #
-# projects = jira.projects()
-# for project in projects:
-#     print project
-#     try:
-#         issues = jira.search_issues('project=%s' % project)
-#
-#         for issue in issues:
-#             print issue
-#             ji = create_issue(issue.key)
-#             print ji
-#
-#     except JIRAError:
-#         print "Can't connect"
+projects = jira.projects()
+for project in projects:
+    print project
+    try:
+        issues = jira.search_issues('project=%s' % project)
+
+        for issue in issues:
+            print issue
+            ji = create_issue(issue.key)
+            print ji
+
+    except JIRAError:
+        print "Can't connect"
 
 

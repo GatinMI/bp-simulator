@@ -102,8 +102,7 @@ class ProjectVersion(jira_db.Entity):
 
 
 class JiraIssue(jira_db.Entity):
-    issue_id = Required(int)
-    key = Optional(str)
+    key = Required(str)
     project = Optional(Project)
     assignee = Optional(JiraUser)
     issue_type = Optional(IssueType)

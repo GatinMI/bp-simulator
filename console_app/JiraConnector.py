@@ -1,5 +1,6 @@
-#coding: utf-8
+# coding: utf-8
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -16,7 +17,6 @@ class JiraConnector:
     server = ''
     user = ''
     password = ''
-
 
     def __init__(self, server, user, password):
         self.server = server
@@ -36,17 +36,16 @@ class JiraConnector:
             user.active = bool(user_json.active)
         return user
 
-
     @db_session
     def get_project(self, id):
-        #нужны ли версии? project.versions
+        # нужны ли версии? project.versions
         project = Project.get(project_id=id)
         if (project == None):
             project_json = self.jira.project(id)
             project = Project(project_id=id)
             if hasattr(project_json, 'url'):
                 project.url = project_json.url
-            project.description  = project_json.description
+            project.description = project_json.description
             project.key = project_json.key
             project.name = project_json.name
             project.lead = self.get_user(project_json.lead.key)
@@ -63,12 +62,10 @@ class JiraConnector:
             link_type.name = link_type_json.name
         return link_type
 
-
     def get_link_types(self):
         link_types = self.jira.issue_link_types()
         for link_type in link_types:
             self.get_link_type(link_type.id)
-
 
     @db_session
     def get_issue_type(self, id):
@@ -80,13 +77,11 @@ class JiraConnector:
             issue_type.description = issue_type_json.description
         return issue_type
 
-
     def get_issue_types(self):
         self.get_issue_type(id)
         issue_types = self.jira.issue_types()
         for issue_type in issue_types:
             self.get_issue_type(issue_type.id)
-
 
     @db_session
     def get_priority(self, id):
@@ -100,12 +95,10 @@ class JiraConnector:
             priority.iconUrl = priority_json.iconUrl
         return priority
 
-
     def get_priorities(self):
         priorities = self.jira.priorities()
         for priority in priorities:
             self.get_priority(priority.id)
-
 
     @db_session
     def create_component(self, id):
@@ -122,18 +115,15 @@ class JiraConnector:
             component.project = self.get_project(component_json.project.id)
         return component
 
-
     def get_components(self, project):
         components = self.jira.project_components(project)
         for component in components:
             self.create_component(component.id)
 
-
     def get_statuses(self):
         statuses = self.jira.statuses()
         for status in statuses:
             self.get_status(status.id)
-
 
     @db_session
     def get_status(self, id):
@@ -147,7 +137,6 @@ class JiraConnector:
             # status.status_category = create_status_category(status.statusCategory) ???
         return status
 
-
     @db_session
     def get_status_category(self, status_category_json):
         status_category = StatusCategory.get(stat_cat_id=status_category_json.id)
@@ -160,13 +149,10 @@ class JiraConnector:
             status_category.save()
         return status_category
 
-
-    # TODO
     def get_issues(self, project_id):
         issues = self.jira.search_issues('project=' + project_id)
         for issue in issues:
-            self.create_issue(issue.key)
-
+            self.create_or_update_issue(issue.key)
 
     # TODO
     def get_version_projects(self, project):
@@ -183,9 +169,8 @@ class JiraConnector:
             # if 'startDate' in version.__dict__:
             #     print version.startDate
 
-
     @db_session
-    def update_issue(self, id):
+    def create_or_update_issue(self, id):
         jira_issue = JiraIssue.get(issue_id=id)
         issue = self.jira.issue(id)
         if (jira_issue == None):
@@ -222,6 +207,56 @@ class JiraConnector:
             jira_issue.time_spent = issue.fields.timespent
         return jira_issue
 
+    @db_session
+    def sync_projects(self):
+        projects = self.jira.projects()
+        db_projects = select(p.project_id for p in Project)[:]
+        projects_id = []
+        for project in projects:
+            projects_id.append(project.id)
+            if project.id not in db_projects:
+                self.get_project(int(project.id))
+            else:
+                self.project_update(int(project.id))
+            self.sync_issues(int(project.id))
+        drop_projects = set(db_projects).difference(set(projects_id))
+        Project.select(lambda p: p.project_id in drop_projects).delete(bulk=True)
+        for id in drop_projects:
+            self.delete_issues(int(id))
+
+    @db_session
+    def sync_issues(self, project_id):
+        issues = self.jira.search_issues('project=' + project_id)
+        db_issues = select(p.key for p in JiraIssue)[:]
+        issues_id = []
+        for issue in issues:
+            issues_id.append(issue.key)
+            self.create_or_update_issue(issue.key)
+        drop_issues = set(db_issues).difference(set(issues_id))
+        Project.select(lambda p: p.project_id in drop_issues).delete(bulk=True)
+
+    @db_session
+    def delete_issues(self, project_id):
+        issues = JiraIssue.select(lambda p: p.project.id == project_id)[:]
+        for issue in issues:
+            issue.delete()
+
+    @db_session
+    def delete_issue(self, issue_key):
+        issue = JiraIssue.get(key=issue_key)
+        issue.delete()
+
+    @db_session
+    def project_update(self, project_id):
+        project = Project.get(project_id=project_id)
+        if (project != None):
+            project_json = self.jira.project(id)
+            if hasattr(project_json, 'url'):
+                project.url = project_json.url
+            project.description = project_json.description
+            project.key = project_json.key
+            project.name = project_json.name
+            project.lead = self.get_user(project_json.lead.key)
 
 if __name__ == "__main__":
     accessor = JiraConnector()
@@ -231,7 +266,7 @@ if __name__ == "__main__":
     project = accessor.jira.project(projects[0])
 
     issue = accessor.jira.search_issues('project=%s' % project)[1]
-    jira_issue = accessor.update_issue(issue.id)
+    jira_issue = accessor.create_or_update_issue(issue.id)
 
     # import json
     # file = open('project.json', 'w')
@@ -239,8 +274,3 @@ if __name__ == "__main__":
     # file.close()
 
     print project.id
-
-
-
-
-

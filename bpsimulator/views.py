@@ -29,8 +29,7 @@ class SignatureMethod_RSA_SHA1(oauth.SignatureMethod):
         """Builds the base signature string."""
         key, raw = self.signing_base(request, consumer, token)
 
-        with open('../jira_privatekey.pcks8', 'r') as f:
-            data = f.read()
+        data = "-----BEGIN PRIVATE KEY-----MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALmssc2MMXdJ7sg6b+eb2jqU4PfDrc2DA0h/UXLu8aTczNLMmHnR4dZ8RJ6/5fjyIVJ3B3SY/7RBKz8Ufl6OcayEK44NsLNyHkz/J2qV+34F/+E+XdhCLPQagYh7Ev0bSncITJ09sk03y7NaN7w9zakzFGvkM6j4gR8nTjwIuvhxAgMBAAECgYAUBNSeztC+hdAi8noCRMGAs3CWBhkFIW0HMgL8G1seZVgIGlsON1zcHUXgv9vxvVluZLr/DUf0jVo2UOVXGJCU0/Rl2u54jdJNOT/CKtvMZnA4vCdEFrdWQBvMeCsfn9s+v09iCW3l/zADdEjIjmtyh68P38vnIL1NLlgkc9zgYQJBAO1cHHxwgp4HVioMzbEqKvg/CiNJsQ7UXDpV69No5Ik52Y9myc8oK8CHGnioTdIBIPQO7/STk+1wZTsigz2q4SUCQQDIQYCEtBKHnR8i49rAhEETPNlEF0KXSevgYs4lZY5/2JT5b72FASFapWFLMqcKfEjyqek/HySZScFA+R26thZdAkEA1nWZT14gxkP+uDOlTeO5u17J/CRDFBEP261yTCvEAbEBP64xvTigf24Snt4CojJe4eT1LdiBmdEpxgpi5j8U+QJALm7hueN3GHLaMWDb7B++ZxOI3Tz3d9TwGItQeWNe803o3R2HuDtW3InUUXdhPBEtaPb02moCNnjfko0w04Y9EQJAdYqSXUDqNDwouEF/c+GO9UEj0w6lf4TCSU0hLBalIjNXnxaWCBZwfORG12T5SKyi0sVAX72aB6NJoIUDq3ZWhQ==-----END PRIVATE KEY-----"
         privateKeyString = data.strip()
 
         privatekey = keyfactory.parsePrivateKey(privateKeyString)

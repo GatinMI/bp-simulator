@@ -3,18 +3,12 @@
 {% block content %}
     <div class="block3">
         <div class="signin-block">
-            <p>SIGN IN</p>
-            <form method="post" >
-                {% csrf_token %}
-                <input type="text" name="email" placeholder="Your Email..">
-
-                <input type="password" name="password" placeholder="Your Password..">
-
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <input type="submit" class="blue-button" value="SIGN IN">
-                    <a class="blue-text" style="font-size: 14px"> Forgot Your Password ➙ </a>
-                </div>
-            </form>
+            <h1>Your personal info:</h1>
+            <img src={{ avatar_link }} width="100" height="100"><br>
+            key: {{ key }}<br>
+            name: {{ name }}<br>
+            emailAddress: {{ emailAddress }}<br>
+            displayName: {{ displayName }}<br>
         </div>
     </div>
 {% endblock %}

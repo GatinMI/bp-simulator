@@ -270,7 +270,7 @@ class JiraConnector:
             project.lead = self.get_user(project_json.lead.key)
 
 if __name__ == "__main__":
-    accessor = JiraConnector("http://***", '****', '***')
+    accessor = JiraConnector("server", 'username', 'password')
 
     projects = accessor.jira.projects()
 

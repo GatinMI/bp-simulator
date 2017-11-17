@@ -121,7 +121,7 @@ class JiraIssue(jira_db.Entity):
     time_estimate = Optional(int)
     time_spent = Optional(int)
     resolution_date = Optional(datetime)
-    # workflow - Required()
+    # workflow = Optional(int)
 
 
 # class IssueLink(models.Model):
@@ -130,7 +130,12 @@ class JiraIssue(jira_db.Entity):
 #     destination = models.ForeignKey(JiraIssue)
 #     sequence = models.IntegerField(default=0)
 
-# class Workflow(models.Model):
+class Workflow(jira_db.Entity):
+    name = Required(str)
+    type = Optional(str)
+    steps = Set('WorkflowStep')
+
+#
 #     author = models.CharField(max_length=255)
 #     group_level = models.CharField(max_length=255)
 #     role_level = models.CharField(max_length=255)
@@ -140,6 +145,25 @@ class JiraIssue(jira_db.Entity):
 #     updated = models.DateTimeField()
 #     start_date = models.DateTimeField()
 #     time_worked = models.IntegerField(default=0)
+
+class JiraAction(jira_db.Entity):
+    issue_id = Required(int)
+    author = Optional(str)
+    created = Optional(datetime)
+    updated = Optional(datetime)
+
+class WorkflowStep(jira_db.Entity):
+    workflow_id = Required(int)
+    name = Optional(str)
+    actions = Set('WorkflowAction')
+
+class WorkflowAction(jira_db.Entity):
+    step_id = Required(int)
+    name = Optional(str)
+    result_step_id = Required(int)
+
+class WorkflowIssue(jira_db.Entity):
+
 
 
 jira_db.bind('sqlite', 'jira_db.sqlite3', create_db=True)

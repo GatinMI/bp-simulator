@@ -1,5 +1,9 @@
 # coding: utf-8
 import sys
+import psycopg2
+import xml.etree.ElementTree as ET
+
+from console_app.jsonEntities.Workflow import *
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -17,12 +21,14 @@ class JiraConnector:
     server = ''
     user = ''
     password = ''
+    port = '8080'
+    db_port = '5432'
 
     def __init__(self, server, user, password):
         self.server = server
         self.user = user
         self.password = password
-        self.jira = JIRA(options={'server': server}, basic_auth=(user, password))
+        self.jira = JIRA(options={'server': 'http://%s:%s' % (server, self.port)},  basic_auth=(user, password))
 
     @db_session
     def get_user(self, key):
@@ -152,7 +158,7 @@ class JiraConnector:
     def get_issues(self, project_id):
         issues = self.jira.search_issues('project=' + project_id)
         for issue in issues:
-            self.create_or_update_issue(issue.key)
+            self.create_or_update_issue(issue.key, issue.id)
 
     # TODO
     def get_version_projects(self, project):
@@ -171,7 +177,7 @@ class JiraConnector:
 
 #Создание или обновление issue
     @db_session
-    def create_or_update_issue(self, id):
+    def create_or_update_issue(self, id, jira_id):
         jira_issue = JiraIssue.get(key=id)
         issue = self.jira.issue(id)
         if (jira_issue == None):
@@ -181,6 +187,7 @@ class JiraConnector:
         issue_updated = parse_datetime(issue.fields.updated)
         if (jira_issue.updated == None or issue_updated > utc.localize(jira_issue.updated)):
             jira_issue.project = self.get_project(issue.fields.project.id)
+            jira_issue.jira_id = jira_id
             if issue.fields.assignee and len(issue.fields.assignee.key) > 0:
                 jira_issue.assignee = self.get_user(issue.fields.assignee.key)
             if issue.fields.issuetype:
@@ -206,6 +213,8 @@ class JiraConnector:
             jira_issue.time_original_estimate = issue.fields.timeoriginalestimate
             jira_issue.time_estimate = issue.fields.timeestimate
             jira_issue.time_spent = issue.fields.timespent
+            wf = self.sync_issue_wf(jira_id)
+            jira_issue.workflow_id = wf.id
         return jira_issue
 
 #Синхронизация проектов
@@ -235,7 +244,7 @@ class JiraConnector:
         for issue in issues:
             try:
                 issues_id.append(issue.key)
-                self.create_or_update_issue(issue.key)
+                self.create_or_update_issue(issue.key, issue.id)
             except JIRAError as error:
                 print "Sorry, but you can't access to issue # "
                 print issue
@@ -269,8 +278,48 @@ class JiraConnector:
             project.name = project_json.name
             project.lead = self.get_user(project_json.lead.key)
 
+    @db_session
+    def sync_issue_wf(self, issue_key):
+        # Define our connection string
+        conn_string = "host='%s' port='%s' dbname='jiradb' user='postgres' password='%s'" % (self.server, self.db_port, self.password)
+
+        jira_issue = JiraIssue.get(key=issue_key)
+
+        # print the connection string we will use to connect
+
+        # get a connection, if a connect cannot be made an exception will be raised here
+        conn = psycopg2.connect(conn_string)
+
+        # conn.cursor will return a cursor object, you can use this cursor to perform queries
+        cursor = conn.cursor()
+
+        cursor.execute("select owf.name, jwf.descriptor from os_wfentry owf "
+                       "inner join jiraissue ji on owf.id = ji.workflow_id "
+                       "INNER JOIN jiraworkflows jwf on owf.name = jwf.workflowname "
+                       "where ji.id = %s" % jira_issue.jira_id)
+
+        wfinfo = cursor.fetchall()
+
+        root = ET.fromstring(wfinfo[0][1])
+
+        jswf = Workflow(wfinfo[0][0])
+
+        for step in root.iter("step"):
+            wf_step = Step(step.attrib['id'], step.attrib['name'])
+            for action in step.iter('action'):
+                step_action = Action(action.attrib['id'], action.attrib['name'],
+                                     action.find('results').find('unconditional-result').attrib['step'])
+                wf_step.add_action(step_action)
+            jswf.add_step(wf_step)
+
+        print json.dumps(jswf, cls=MyEncoder, ensure_ascii=False).encode('utf8')
+
+        jira_wf = JiraWorkflow(name=jswf.name)
+        jira_wf.descriptor = json.dumps(jswf, cls=MyEncoder)
+        return jira_wf
+
 if __name__ == "__main__":
-    accessor = JiraConnector("http://***", '****', '***')
+    accessor = JiraConnector("", '', '')
 
     projects = accessor.jira.projects()
 
@@ -279,6 +328,12 @@ if __name__ == "__main__":
     issue = accessor.jira.search_issues('project=%s' % project)[1]
 
     print issue
+
+    accessor.create_or_update_issue(issue.key, issue.id)
+
+    # result = accessor.sync_issue_wf(issue.key)
+
+    # print result
 
     # jira_issue = accessor.create_or_update_issue(issue.id)
 

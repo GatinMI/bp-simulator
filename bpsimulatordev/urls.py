@@ -19,8 +19,11 @@ from bpsimulator.views import *
 from django.conf.urls.static import static
 from bpsimulatordev import settings
 
+
+
 urlpatterns = [
     url(r'^$', index, name='index'),
     url(r'^signin/', signin, name='signin'),
     url(r'^admin/', admin.site.urls),
+    url(r'^issue/(?P<issue_id>.+)', get_issue, name='issue'),
 ]

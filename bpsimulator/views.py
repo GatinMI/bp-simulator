@@ -1,9 +1,12 @@
+from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
 import base64
-import urlparse
+from urllib.parse import urlparse
 from tlslite.utils import keyfactory
 import oauth2 as oauth
 import json
+
+from bpsimulator.serialize import IssueSerialize
 
 
 class SignatureMethod_RSA_SHA1(oauth.SignatureMethod):
@@ -72,6 +75,7 @@ def index(request):
     request_token = dict(urlparse.parse_qsl(content))
 
     jira_url = "%s?oauth_token=%s" % (authorize_url, request_token['oauth_token'])
+
     if ("jira_url" != ""):
         return render(request, "index.html", {"url": jira_url});
 
@@ -120,3 +124,21 @@ def signin(request):
         return render_to_response("signin.html",
                                   {"key": key, "name": name, "emailAddress": emailAddress, "displayName": displayName,
                                    "avatar_link": avatar_link});
+
+
+
+
+
+from console_app.models import JiraIssue
+
+
+def get_issue(request, issue_id):
+    try:
+        issue = JiraIssue.objects.get(jira_id=issue_id)
+    except JiraIssue.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == 'GET':
+        serializer = IssueSerialize(issue, context={'request': request})
+        return HttpResponse(json.dumps(serializer.data, ensure_ascii=False, encoding="utf-8"),
+                            content_type="application/json; encoding=utf-8")
